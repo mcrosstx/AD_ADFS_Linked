@@ -1,0 +1,169 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUserName": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+              "description": "Username for local administrator account"
+            }
+          },
+          "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "Password for local administrator account"
+            }
+          },
+          "networkappsubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_exch",
+            "metadata": {
+              "description": "This is the name of your Exchange subnet"
+            }
+          },
+          "serverexchfqdn": {
+            "type": "string",
+            "defaultValue": "exch",
+            "maxLength": 13,
+            "metadata": {
+              "description": "This is the base name of your Exchange servers"
+            }
+          },
+          "serverexchavset": {
+            "type": "string",
+            "defaultValue": "az_services_avset_exch",
+            "metadata": {
+              "description": "This is the name of the availability set for your Exchange servers"
+            }
+          },
+          "serverexchfqdnloopcount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+              "description": "This is the number of Exchange servers that will be created via loop"
+            }
+          },
+          "vnetID": {
+              "type": "string",
+              "metadata": {
+                "description": "ResourceID of the VNet to Deploy to"
+              }
+          },
+          "serverexchvmsize": {
+            "type": "string",
+            "defaultValue": "Standard_A3",
+            "metadata": {
+              "description": "Size for the Exchange VMs"
+            } 
+          }  
+    },
+    "variables": {
+        "ApiVer": "2017-03-30",
+        "serverImagePublisher": "MicrosoftWindowsServer",
+        "serverImageOffer": "WindowsServer",
+        "serverwindowsosversion": "2016-Datacenter"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "sku": {
+                "name": "Aligned"
+            },
+            "name": "[parameters('serverexchavset')]",
+            "apiVersion": "[variables('ApiVer')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "Availability Set - Exchange servers"
+            },
+            "properties": {
+                "PlatformUpdateDomainCount": 3,
+                "PlatformFaultDomainCount": 2
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat(parameters('serverexchfqdn'), padLeft(copyindex(1), 2, '0'),'-nic')]",
+            "apiVersion": "2016-03-30",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "Exchange VMs NICCopy",
+                "count": "[parameters('serverexchfqdnloopcount')]"
+            },
+            "tags": {
+                "displayName": "NICS - Exchange",
+                "Workloads": "Identity"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[concat(parameters('vnetID'),'/subnets/',parameters('networkappsubnetname'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(parameters('serverexchfqdn'), padLeft(copyindex(1), 2, '0'))]",
+            "apiVersion": "[variables('ApiVer')]",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "Exchange VM Loop')]",
+                "count": "[parameters('serverexchfqdnloopcount')]"
+            },
+            "tags": {
+                "displayName": "Servers - Exchange",
+                "Workloads": "Identity"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('serverexchvmsize')]"
+                },
+                "availabilityset": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('serverexchavset'))]"
+                },
+                "osProfile": {
+                    "computerName": "[concat(parameters('serverexchfqdn'), padLeft(copyindex(1), 2, '0'))]",
+                    "adminUsername": "[parameters('adminUserName')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('serverImagePublisher')]",
+                        "offer": "[variables('serverImageOffer')]",
+                        "sku": "[variables('ServerWindowsOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    },
+                    "datadisks": [
+                        {
+                            "disksizeGB": "1023",
+                            "lun": 0,
+                            "createoption": "empty"
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('serverexchfqdn'), padLeft(copyindex(1), 2, '0'),'-nic'))]"
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', parameters('serverexchfqdn'), padLeft(copyindex(1), 2, '0'),'-nic')]",
+                "[concat('Microsoft.Compute/availabilitySets/', parameters('serverexchavset'))]"
+            ]
+        }
+    ]
+}

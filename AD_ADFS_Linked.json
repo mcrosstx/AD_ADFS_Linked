@@ -390,7 +390,16 @@
                     "uri": "https://raw.githubusercontent.com/mcrosstx/AD_ADFS_Linked/master/Exchange.json",
                     "contentVersion": "1.0.0.0"
                 },
-                "parameters": {}
+                "parameters": {
+                  "adminUserName": {"value": "[parameters('adminUserName')]"},
+                  "adminPassword": {"value": "[parameters('adminPassword')]"},
+                  "vnetID": {"value": "[variables('vnetID')]"},
+                  "networkappsubnetname": {"value": "[parameters('networkappsubnetname')]"},
+                  "serverexchfqdn": {"value": "[parameters('serverexchfqdn')]"},
+                  "serverexchfqdnloopcount": {"value": "[parameters('serverexchfqdnloopcount')]"},
+                  "serverexchavset": {"value": "[parameters('serverexchavset')]"},
+                  "serverexchangevmsize": {"value": "[variables('serverexchangevmsize')]"}
+                }
             }
         },
         {
@@ -404,7 +413,11 @@
                     "uri": "https://raw.githubusercontent.com/mcrosstx/AD_ADFS_Linked/master/AAD.json",
                     "contentVersion": "1.0.0.0"
                 },
-                "parameters": {}
+                "parameters": {
+                  "adminUserName": {"value": "[parameters('adminUserName')]"},
+                  "adminPassword": {"value": "[parameters('adminPassword')]"},
+                  "vnetID": {"value": "[variables('vnetID')]"},
+                }
             }
         },
         {
@@ -418,7 +431,11 @@
                     "uri": "https://raw.githubusercontent.com/mcrosstx/AD_ADFS_Linked/master/AADSQL.json",
                     "contentVersion": "1.0.0.0"
                 },
-                "parameters": {}
+                "parameters": {
+                  "adminUserName": {"value": "[parameters('adminUserName')]"},
+                  "adminPassword": {"value": "[parameters('adminPassword')]"},
+                  "vnetID": {"value": "[variables('vnetID')]"},
+                }
             }
         }
     ]
