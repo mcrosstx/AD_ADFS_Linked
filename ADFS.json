@@ -1,0 +1,458 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUserName": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+              "description": "Username for local administrator account"
+            }
+          },
+          "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "Password for local administrator account"
+            }
+          },
+          "vnetID": {
+              "type": "string",
+              "metadata": {
+                "description": "ResourceID of the VNet to Deploy to"
+              }
+          },
+          "networkadfssubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_adfs",
+            "metadata": {
+              "description": "This is the name of your ADFS subnet"
+            }
+          },
+          "networkadfsdmzsubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_adfsdmz",
+            "metadata": {
+              "description": "This is the name of your ADFS DMZ subnet"
+            }
+          },
+          "networkwappip": {
+            "type": "string",
+            "defaultValue": "az_services_pip_adfsdmz",
+            "metadata": {
+              "description": "This is the name of the public IP used for the WAP servers"
+            }
+          },
+          "networklbadfsname": {
+            "type": "string",
+            "defaultValue": "az_services_lb_adfs",
+            "metadata": {
+              "description": "This is the name of the load balancer for the ADFS servers"
+            }
+          },
+          "networklbwapname": {
+            "type": "string",
+            "defaultValue": "az_services_lb_wap",
+            "metadata": {
+              "description": "This is the name of the load balancer for the WAP servers"
+            }
+          },
+          "serveradfsfqdn": {
+            "type": "string",
+            "defaultValue": "azadfs",
+            "metadata": {
+              "description": "This is the base name of your two ADFS servers"
+            }
+          },
+          "serveradfsfqdnloopcount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+              "description": "This is the number of ADFS servers that will be created via loop"
+            }
+          },
+          "serveradfsavset": {
+            "type": "string",
+            "defaultValue": "az_services_avset_adfs",
+            "metadata": {
+              "description": "This is the name of the availability set for your ADFS servers"
+            }
+          },
+          "serverwapfqdn": {
+            "type": "string",
+            "defaultValue": "azwap",
+            "metadata": {
+              "description": "This is the base name of your two WAP servers"
+            }
+          },
+          "serverwapfqdnloopcount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+              "description": "This is the number of WAP servers that will be created via loop"
+            }
+          },
+          "serverwapavset": {
+            "type": "string",
+            "defaultValue": "az_services_avset_wap",
+            "metadata": {
+              "description": "This is the name of the availability set for your WAP servers"
+            }
+          },
+          "serveradfsvmsize": {
+            "type": "string",
+            "defaultValue": "Standard_A2",
+            "metadata": {
+              "description": "Size for the ADFS VMs"
+            } 
+          },
+          "serverwapvmsize": {
+            "type": "string",
+            "defaultValue": "Standard_A3",
+            "metadata": {
+              "description": "Size for the WAP VMs"
+            } 
+          }
+    },
+    "variables": {
+        "ApiVer": "2017-03-30",
+        "serverImagePublisher": "MicrosoftWindowsServer",
+        "serverImageOffer": "WindowsServer",
+        "serverwindowsosversion": "2016-Datacenter"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "sku": {
+                "name": "Aligned"
+            },
+            "name": "[parameters('serveradfsavset')]",
+            "apiVersion": "[variables('ApiVer')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "Availability Set - ADFS"
+            },
+            "properties": {
+                "PlatformUpdateDomainCount": 3,
+                "PlatformFaultDomainCount": 2
+            }
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "sku": {
+                "name": "Aligned"
+            },
+            "name": "[parameters('serverwapavset')]",
+            "apiVersion": "[variables('ApiVer')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "Availability Set - WAP"
+            },
+            "properties": {
+                "PlatformUpdateDomainCount": 3,
+                "PlatformFaultDomainCount": 2
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "name": "[parameters('networklbadfsname')]",
+            "type": "Microsoft.Network/loadBalancers",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+            ],
+            "tags": {
+              "displayName": "Load Balancer - ADFS"
+            },
+            "properties": {
+              "frontendIPConfigurations": [
+                {
+                  "name": "LoadBalancerFrontEnd",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[concat(parameters('vnetID'),'/subnets/',parameters('networkadfssubnetname'))]"
+                    }
+                  }
+                }
+              ],
+              "backendAddressPools": [
+                {
+                  "name": "loadBalancerBackEnd"
+                }
+              ],
+              "loadBalancingRules": [
+                {
+                  "properties": {
+                    "frontendIPConfiguration": {
+                      "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbadfsname')), '/frontendIpConfigurations/loadBalancerFrontEnd')]"
+                    },
+                    "backendAddressPool": {
+                      "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbadfsname')), '/backendAddressPools/loadBalancerBackEnd')]"
+                    },
+                    "probe": {
+                      "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbadfsname')), '/probes/lbprobe')]"
+                    },
+                    "protocol": "Tcp",
+                    "frontendPort": 443,
+                    "backendPort": 443,
+                    "idleTimeoutInMinutes": 15
+                  },
+                  "name": "lbrule"
+                }
+              ],
+              "probes": [
+                    {
+                    "properties": {
+                        "protocol": "Tcp",
+                        "port": 443,
+                        "intervalInSeconds": 15,
+                        "numberOfProbes": 2
+                    },
+                    "name": "lbprobe"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "name": "[parameters('networklbwapname')]",
+            "type": "Microsoft.Network/loadBalancers",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+              "[concat('Microsoft.Network/publicIPAddresses/',parameters('networkwappip'))]"
+            ],
+            "tags": {
+              "displayName": "Load Balancer - WAP"
+            },
+            "properties": {
+              "frontendIPConfigurations": [
+                {
+                  "name": "LoadBalancerFrontEnd",
+                  "properties": {
+                    "publicIPAddress": {
+                      "id": "[resourceId('Microsoft.Network/publicIPAddresses/',parameters('networkwappip'))]"
+                    }
+                  }
+                }
+              ],
+              "backendAddressPools": [
+                {
+                  "name": "loadBalancerBackEnd"
+                }
+              ],
+              "loadBalancingRules": [
+                {
+                  "properties": {
+                    "frontendIPConfiguration": {
+                      "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbwapname')), '/frontendIpConfigurations/loadBalancerFrontEnd')]"
+                    },
+                    "backendAddressPool": {
+                      "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbwapname')), '/backendAddressPools/loadBalancerBackEnd')]"
+                    },
+                    "probe": {
+                      "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbwapname')), '/probes/lbprobe')]"
+                    },
+                    "protocol": "Tcp",
+                    "frontendPort": 443,
+                    "backendPort": 443,
+                    "idleTimeoutInMinutes": 15
+                  },
+                  "name": "lbrule"
+                }
+              ],
+              "probes": [
+                {
+                  "properties": {
+                    "protocol": "Tcp",
+                    "port": 443,
+                    "intervalInSeconds": 15,
+                    "numberOfProbes": 2
+                  },
+                  "name": "lbprobe"
+                }
+              ]
+            }
+          },
+          {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('networkwappip')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "publicIPAllocationMethod": "Dynamic"
+            },
+            "tags": {
+              "displayName": "Public IP"
+            }
+          },
+        {
+            "name": "[concat(parameters('serveradfsfqdn'), padLeft(copyindex(1), 2, '0'),'-nic')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2016-03-30",
+            "dependsOn": [
+              "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbadfsname')))]"
+            ],
+            "copy": {
+              "name": "ADFS-NICCopy",
+              "count": "[parameters('serveradfsfqdnloopcount')]"
+            },
+            "tags": {
+              "displayName": "NICS - ADFS",
+              "Workloads": "Identity"
+            },
+            "properties": {
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[concat(parameters('vnetID'),'/subnets/',parameters('networkadfssubnetname'))]"
+                    },
+                    "Loadbalancerbackendaddresspools": [
+                      {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbadfsname')), '/backendAddressPools/','LoadBalancerBackEnd')]"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "[concat(parameters('serverwapfqdn'), padLeft(copyindex(1), 2, '0'),'-nic')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2016-03-30",
+            "dependsOn": [
+              "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbwapname')))]"
+            ],
+            "copy": {
+              "name": "WAP-NICCopy",
+              "count": "[parameters('serverwapfqdnloopcount')]"
+            },
+            "tags": {
+              "displayName": "NICS - WAP",
+              "Workloads": "Identity"
+            },
+            "properties": {
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[concat(parameters('vnetID'),'/subnets/',parameters('networkadfsdmzsubnetname'))]"
+                    },
+                    "Loadbalancerbackendaddresspools": [
+                      {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('networklbwapname')), '/backendAddressPools/','LoadBalancerBackEnd')]"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(parameters('serveradfsfqdn'), padLeft(copyindex(1), 2, '0'))]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[variables('ApiVer')]",
+            "copy": {
+              "name": "ADFS VM Loop",
+              "count": "[parameters('serveradfsfqdnloopcount')]"
+            },
+            "dependsOn": [
+              "[concat('Microsoft.Network/networkInterfaces/', parameters('serveradfsfqdn'), padLeft(copyindex(1), 2, '0'),'-nic')]",
+              "[concat('Microsoft.Compute/availabilitySets/', parameters('serveradfsavset'))]"
+            ],
+            "tags": {
+              "displayName": "Servers - ADFS",
+              "Workloads": "Identity"
+            },
+            "properties": {
+              "hardwareProfile": {
+                "vmSize": "[parameters('serveradfsvmsize')]"
+              },
+              "availabilityset": {
+                "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('serveradfsavset'))]"
+              },
+              "osProfile": {
+                "computerName": "[concat(parameters('serveradfsfqdn'), padLeft(copyindex(1), 2, '0'))]",
+                "adminUsername": "[parameters('adminUserName')]",
+                "adminPassword": "[parameters('adminPassword')]"
+              },
+              "storageProfile": {
+                "imageReference": {
+                    "publisher": "[variables('serverImagePublisher')]",
+                    "offer": "[variables('serverImageOffer')]",
+                    "sku": "[variables('ServerWindowsOSVersion')]",
+                    "version": "latest"
+                },
+                "osDisk": {
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage"
+                }
+            },
+              "networkProfile": {
+                "networkInterfaces": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('serveradfsfqdn'), padLeft(copyindex(1), 2, '0'),'-nic'))]"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(parameters('serverwapfqdn'), padLeft(copyindex(1), 2, '0'))]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[variables('ApiVer')]",
+            "copy": {
+              "name": "WAP VM Loop",
+              "count": "[parameters('serveradfsfqdnloopcount')]"
+            },
+            "dependsOn": [
+              "[concat('Microsoft.Network/networkInterfaces/', parameters('serverwapfqdn'), padLeft(copyindex(1), 2, '0'),'-nic')]",
+              "[concat('Microsoft.Compute/availabilitySets/', parameters('serverwapavset'))]"
+            ],
+            "tags": {
+              "displayName": "Servers - WAP",
+              "Workloads": "Identity"
+            },
+            "properties": {
+              "hardwareProfile": {
+                "vmSize": "[parameters('serverwapvmsize')]"
+              },
+              "availabilityset": {
+                "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('serverwapavset'))]"
+              },
+              "osProfile": {
+                "computerName": "[concat(parameters('serverwapfqdn'), padLeft(copyindex(1), 2, '0'))]",
+                "adminUsername": "[parameters('adminUserName')]",
+                "adminPassword": "[parameters('adminPassword')]"
+              },
+              "storageProfile": {
+                "imageReference": {
+                    "publisher": "[variables('serverImagePublisher')]",
+                    "offer": "[variables('serverImageOffer')]",
+                    "sku": "[variables('ServerWindowsOSVersion')]",
+                    "version": "latest"
+                },
+                "osDisk": {
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage"
+                }
+              },
+              "networkProfile": {
+                "networkInterfaces": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('serverwapfqdn'), padLeft(copyindex(1), 2, '0'),'-nic'))]"
+                  }
+                ]
+              }
+            }
+          }
+    ]
+}

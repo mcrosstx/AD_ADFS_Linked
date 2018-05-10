@@ -113,7 +113,7 @@
             "apiVersion": "[variables('ApiVer')]",
             "location": "[resourceGroup().location]",
             "copy": {
-                "name": "[concat(parameters('serverdcfqdn'),'Loop')]",
+                "name": "DC VM Loop')]",
                 "count": "[parameters('serverdcfqdnloopcount')]"
             },
             "tags": {
