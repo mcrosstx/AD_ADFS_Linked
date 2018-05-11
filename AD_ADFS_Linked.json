@@ -59,53 +59,16 @@
             } 
           },
           "vnetRG": {
-              "type": "String",
+              "type": "string",
               "metadata": {
                   "description": "Resource Group the Virtual Network is in"
               }
-          },
-          "ADDSSubnetName": {
-            "type": "string",
-            "metadata": {
-              "description": "Subnet for ADDS Servers"
-            } 
-          },
-          "ADFSSubnetName": {
-            "type": "string",
-            "metadata": {
-              "description": "Subnet for ADFS Servers"
-            } 
-          },
-          "ExchangeSubnetName": {
-            "type": "string",
-            "metadata": {
-              "description": "Subnet for Exchange Servers"
-            } 
-          },
-          "AADConnectSubnetName": {
-            "type": "string",
-            "metadata": {
-              "description": "Subnet for AAD Connect Servers"
-            } 
-          },
-          "AADSQLSubnetName": {
-            "type": "string",
-            "metadata": {
-              "description": "Subnet for AAD SQL Servers"
-            } 
           },
           "networkappsubnetname": {
             "type": "string",
             "defaultValue": "az_services_subnet_apps",
             "metadata": {
               "description": "This is the name of your apps subnet"
-            }
-          },
-          "networkappsubnetnsgname": {
-            "type": "string",
-            "defaultValue": "az_services_nsg_apps",
-            "metadata": {
-              "description": "This is the name of the nsg assigned to the apps subnet"
             }
           },
           "networkdatasubnetname": {
@@ -115,25 +78,11 @@
               "description": "This is the name of your data tier subnet"
             }
           },
-          "networkdatasubnetnsgname": {
-            "type": "string",
-            "defaultValue": "az_services_nsg_data",
-            "metadata": {
-              "description": "This is the name of the nsg assigned to the data tier subnet"
-            }
-          },
           "networkaddssubnetname": {
             "type": "string",
             "defaultValue": "az_services_subnet_ad",
             "metadata": {
               "description": "This is the name of your AD subnet"
-            }
-          },
-          "networkaddssubnetnsgname": {
-            "type": "string",
-            "defaultValue": "az_services_nsg_ad",
-            "metadata": {
-              "description": "This is the name of the nsg assigned to the AD subnet"
             }
           },
           "networkadfssubnetname": {
@@ -143,25 +92,11 @@
               "description": "This is the name of your ADFS subnet"
             }
           },
-          "networkadfssubnetnsgname": {
-            "type": "string",
-            "defaultValue": "az_services_nsg_adfs",
-            "metadata": {
-              "description": "This is the name of the nsg assigned to the ADFS subnet"
-            }
-          },
           "networkadfsdmzsubnetname": {
             "type": "string",
             "defaultValue": "az_services_subnet_adfsdmz",
             "metadata": {
               "description": "This is the name of your ADFS DMZ subnet"
-            }
-          },
-          "networkadfsdmzsubnetnsgname": {
-            "type": "string",
-            "defaultValue": "az_services_nsg_adfsdmz",
-            "metadata": {
-              "description": "This is the name of the nsg assigned to the ADFS DMZ subnet"
             }
           },
           "networkwappip": {
@@ -299,42 +234,14 @@
         "AADConnectResourceGroupName": "[tolower(concat(parameters('namingPrefix'), '_rg_aadconnect'))]",
         "AADSQLResourceGroupName": "[tolower(concat(parameters('namingPrefix'), '_rg_aadsql'))]",
         "vnetID": "[resourceId(parameters('vnetRG'),'Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
-        "networkpublicIPAddressType": "Dynamic",
-        "networkpublicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('networkwappip'))]",
-        "networkappsubnetnsgid": "[resourceID('Microsoft.Network/networkSecurityGroups/',parameters('networkappsubnetnsgname'))]",
-        "networkdatasubnetnsgid": "[resourceID('Microsoft.Network/networkSecurityGroups/',parameters('networkdatasubnetnsgname'))]",
-        "networkaddssubnetnsgid": "[resourceID('Microsoft.Network/networkSecurityGroups/',parameters('networkaddssubnetnsgname'))]",
-        "networkadfssubnetnsgid": "[resourceID('Microsoft.Network/networkSecurityGroups/',parameters('networkadfssubnetnsgname'))]",
-        "networkadfsdmzsubnetnsgid": "[resourceID('Microsoft.Network/networkSecurityGroups/',parameters('networkadfsdmzsubnetnsgname'))]",
-        "networkappsubnetref": "[concat(variables('vnetID'), '/subnets/', parameters('networkappsubnetname'))]",
-        "networkdatasubnetref": "[concat(variables('vnetID'), '/subnets/', parameters('networkdatasubnetname'))]",
-        "networkaddssubnetref": "[concat(variables('vnetID'), '/subnets/', parameters('networkaddssubnetname'))]",
-        "networkadfssubnetref": "[concat(variables('vnetID'), '/subnets/', parameters('networkadfssubnetname'))]",
-        "networkadfsdmzsubnetref": "[concat(variables('vnetID'), '/subnets/', parameters('networkadfsdmzsubnetname'))]",
-        "networklbadfsref": "[resourceId('Microsoft.Network/LoadBalancers',parameters('networklbadfsname'))]",
-        "networklbwapref": "[resourceId('Microsoft.Network/LoadBalancers',parameters('networklbwapname'))]",
         "storagetype": "Standard_LRS",
         "storageName": "[concat('identity', uniqueString(resourceGroup().id))]",
-        "serverStorageAccountContainerName": "vhds",
         "serverdcvmsize": "Standard_A3",
         "serveradfsvmsize": "Standard_A2",
         "serverwapvmsize": "Standard_A3",
         "serverexchvmsize": "Standard_A5",
         "serveraadconnectvmsize": "Standard_D3_v2",
-        "serveraadsqlvmsize": "Standard_DS3_v2",
-        "serverImagePublisher": "MicrosoftWindowsServer",
-        "serverImageOffer": "WindowsServer",
-        "serverwindowsosversion": "2016-Datacenter",
-        "serverdcnicname": "[concat(parameters('serverdcfqdn'),'nic')]",
-        "serverdcosdiskname": "[concat(parameters('serverdcfqdn'),'OSDisk')]",
-        "serveradfsosdiskname": "[concat(parameters('serveradfsfqdn'),'OSDisk')]",
-        "serverwaposdiskname": "[concat(parameters('serverwapfqdn'),'OSDisk')]",
-        "serverexchosdiskname": "[concat(parameters('serverexchfqdn'),'OSDisk')]",
-        "serveraadconnectosdiskname": "[concat(parameters('serveraadconnectfqdn'),'OSDisk')]",
-        "serveradfsnicname": "[concat(parameters('serveradfsfqdn'),'nic')]",
-        "serverwapnicname": "[concat(parameters('serverwapfqdn'),'nic')]",
-        "serverexchnicname": "[concat(parameters('serverexchfqdn'),'nic')]",
-        "serveraadconnectnicname": "[concat(parameters('serveraadconnectfqdn'),'nic')]"
+        "serveraadsqlvmsize": "Standard_DS3_v2"
     },
     "resources": [
         {
