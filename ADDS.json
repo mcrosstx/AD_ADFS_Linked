@@ -142,14 +142,16 @@
                     },
                     "osDisk": {
                         "caching": "ReadWrite",
-                        "createOption": "FromImage"
+                        "createOption": "FromImage",
+                        "name": "[concat(parameters('serverdcfqdn'), padLeft(copyindex(1), 2, '0'),'_OSDisk_1')]"
                     },
                     "datadisks": [
                         {
                             "caching": "none",
                             "disksizeGB": "1023",
                             "lun": 0,
-                            "createoption": "empty"
+                            "createoption": "empty",
+                            "name": "[concat(parameters('serverdcfqdn'), padLeft(copyindex(1), 2, '0'),'_Data_1')]"
                         }
                     ]
                 },

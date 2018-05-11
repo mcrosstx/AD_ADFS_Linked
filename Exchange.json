@@ -142,15 +142,9 @@
                     },
                     "osDisk": {
                         "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    },
-                    "datadisks": [
-                        {
-                            "disksizeGB": "1023",
-                            "lun": 0,
-                            "createoption": "empty"
-                        }
-                    ]
+                        "createOption": "FromImage",
+                        "name": "[concat(parameters('serverexchfqdn'), padLeft(copyindex(1), 2, '0'),'_OSDisk_1')]"
+                    }
                 },
                 "networkProfile": {
                     "networkInterfaces": [

@@ -106,7 +106,8 @@
                 },
                 "osDisk": {
                     "caching": "ReadWrite",
-                    "createOption": "FromImage"
+                    "createOption": "FromImage",
+                    "name": "[concat(parameters('serveraadconnectfqdn'),'_OSDisk_1')]"
                 }
               },
               "networkProfile": {

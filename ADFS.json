@@ -394,7 +394,8 @@
                 },
                 "osDisk": {
                     "caching": "ReadWrite",
-                    "createOption": "FromImage"
+                    "createOption": "FromImage",
+                    "name": "[concat(parameters('serveradfsfqdn'), padLeft(copyindex(1), 2, '0'),'_OSDisk_1')]"
                 }
             },
               "networkProfile": {
@@ -444,7 +445,8 @@
                 },
                 "osDisk": {
                     "caching": "ReadWrite",
-                    "createOption": "FromImage"
+                    "createOption": "FromImage",
+                    "name": "[concat(parameters('serverwapfqdn'), padLeft(copyindex(1), 2, '0'),'_OSDisk_1')]"
                 }
               },
               "networkProfile": {
