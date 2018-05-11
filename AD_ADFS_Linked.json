@@ -319,7 +319,7 @@
         "serverdcvmsize": "Standard_A3",
         "serveradfsvmsize": "Standard_A2",
         "serverwapvmsize": "Standard_A3",
-        "serverexchangevmsize": "Standard_A5",
+        "serverexchvmsize": "Standard_A5",
         "serveraadconnectvmsize": "Standard_D3_v2",
         "serveraadsqlvmsize": "Standard_DS3_v2",
         "serverImagePublisher": "MicrosoftWindowsServer",
@@ -410,7 +410,7 @@
                   "serverexchfqdn": {"value": "[parameters('serverexchfqdn')]"},
                   "serverexchfqdnloopcount": {"value": "[parameters('serverexchfqdnloopcount')]"},
                   "serverexchavset": {"value": "[parameters('serverexchavset')]"},
-                  "serverexchangevmsize": {"value": "[variables('serverexchangevmsize')]"}
+                  "serverexchvmsize": {"value": "[variables('serverexchvmsize')]"}
                 }
             }
         },

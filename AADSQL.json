@@ -15,11 +15,11 @@
               "description": "Password for local administrator account"
             }
           },
-          "networkappsubnetname": {
+          "networkdatasubnetname": {
             "type": "string",
-            "defaultValue": "az_services_subnet_app",
+            "defaultValue": "az_services_subnet_data",
             "metadata": {
-              "description": "This is the name of your application subnet"
+              "description": "This is the name of your data subnet"
             }
           },
           "serveraadsqlfqdn": {
@@ -27,7 +27,7 @@
             "defaultValue": "aadsql",
             "maxLength": 15,
             "metadata": {
-              "description": "This is the base name of your AAD sql Server"
+              "description": "This is the base name of your AAD SQL Server"
             }
           },
           "vnetID": {
@@ -40,7 +40,7 @@
             "type": "string",
             "defaultValue": "Standard_DS3_v2",
             "metadata": {
-              "description": "Size for the AAD sql VM"
+              "description": "Size for the AAD SQL VM"
             } 
           }  
     },
@@ -69,7 +69,7 @@
                   "properties": {
                     "privateIPAllocationMethod": "Dynamic",
                     "subnet": {
-                      "id": "[concat(parameters('vnetID'),'/subnets/',parameters('networkappsubnetname'))]"
+                      "id": "[concat(parameters('vnetID'),'/subnets/',parameters('networkdatasubnetname'))]"
                     }
                   }
                 }
