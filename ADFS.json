@@ -59,6 +59,7 @@
           "serveradfsfqdn": {
             "type": "string",
             "defaultValue": "azadfs",
+            "maxLength": 13,
             "metadata": {
               "description": "This is the base name of your two ADFS servers"
             }
@@ -80,6 +81,7 @@
           "serverwapfqdn": {
             "type": "string",
             "defaultValue": "azwap",
+            "maxLength": 13,
             "metadata": {
               "description": "This is the base name of your two WAP servers"
             }

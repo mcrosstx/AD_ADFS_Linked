@@ -1,0 +1,122 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUserName": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+              "description": "Username for local administrator account"
+            }
+          },
+          "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "Password for local administrator account"
+            }
+          },
+          "networkappsubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_app",
+            "metadata": {
+              "description": "This is the name of your application subnet"
+            }
+          },
+          "serveraadconnectfqdn": {
+            "type": "string",
+            "defaultValue": "aadconn",
+            "maxLength": 15,
+            "metadata": {
+              "description": "This is the base name of your AAD Connect Server"
+            }
+          },
+          "vnetID": {
+              "type": "string",
+              "metadata": {
+                "description": "ResourceID of the VNet to Deploy to"
+              }
+          },
+          "serveraadconnectvmsize": {
+            "type": "string",
+            "defaultValue": "Standard_D3_v2",
+            "metadata": {
+              "description": "Size for the AAD Connect VM"
+            } 
+          }  
+    },
+    "variables": {
+        "ApiVer": "2017-03-30",
+        "serverImagePublisher": "MicrosoftWindowsServer",
+        "serverImageOffer": "WindowsServer",
+        "serverwindowsosversion": "2016-Datacenter"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('serveraadconnectfqdn'),'-nic')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2016-03-30",
+            "dependsOn": [
+            ],
+            "tags": {
+              "displayName": "NICS - AADConnect",
+              "Workloads": "Identity"
+            },
+            "properties": {
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Static",
+                    "subnet": {
+                      "id": "[concat(parameters('vnetID'),'/subnets/',parameters('networkappsubnetname'))]"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('serveraadconnectfqdn')]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[variables('ApiVer')]",
+            "dependsOn": [
+              "[concat('Microsoft.Network/networkInterfaces/', parameters('serveraadconnectfqdn'),'-nic')]"
+            ],
+            "tags": {
+              "displayName": "Servers - AADConnect",
+              "Workloads": "Identity"
+            },
+            "properties": {
+              "hardwareProfile": {
+                "vmSize": "[parameters('serveraadconnectvmsize')]"
+              },
+              "osProfile": {
+                "computerName": "[concat(parameters('serveraadconnectfqdn'))]",
+                "adminUsername": "[parameters('adminUserName')]",
+                "adminPassword": "[parameters('adminPassword')]"
+              },
+              "storageProfile": {
+                "imageReference": {
+                  "publisher": "[variables('serverImagePublisher')]",
+                  "offer": "[variables('serverImageOffer')]",
+                  "sku": "[variables('ServerWindowsOSVersion')]",
+                  "version": "latest"
+                },
+                "osDisk": {
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage"
+                }
+              },
+              "networkProfile": {
+                "networkInterfaces": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('serveraadconnectfqdn'),'-nic'))]"
+                  }
+                ]
+              }
+            }
+          }
+    ]
+}

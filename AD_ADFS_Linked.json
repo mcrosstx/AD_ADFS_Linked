@@ -188,15 +188,16 @@
           "serverdcfqdn": {
             "type": "string",
             "defaultValue": "azadds",
+            "maxLength": 13,
             "metadata": {
-              "description": "This is the base name of your two domain controllers"
+              "description": "This is the base name of the domain controllers"
             }
           },
           "serverdcavset": {
             "type": "string",
             "defaultValue": "az_services_avset_ad",
             "metadata": {
-              "description": "This is the name of the availability set for your DCs"
+              "description": "This is the name of the availability set for the DCs"
             }
           },
           "serverdcfqdnloopcount": {
@@ -209,8 +210,9 @@
           "serveradfsfqdn": {
             "type": "string",
             "defaultValue": "azadfs",
+            "maxLength": 13,
             "metadata": {
-              "description": "This is the base name of your two ADFS servers"
+              "description": "This is the base name of the ADFS servers"
             }
           },
           "serveradfsfqdnloopcount": {
@@ -224,14 +226,15 @@
             "type": "string",
             "defaultValue": "az_services_avset_adfs",
             "metadata": {
-              "description": "This is the name of the availability set for your ADFS servers"
+              "description": "This is the name of the availability set for the ADFS servers"
             }
           },
           "serverwapfqdn": {
             "type": "string",
             "defaultValue": "azwap",
+            "maxLength": 13,
             "metadata": {
-              "description": "This is the base name of your two WAP servers"
+              "description": "This is the base name of the WAP servers"
             }
           },
           "serverwapfqdnloopcount": {
@@ -245,14 +248,15 @@
             "type": "string",
             "defaultValue": "az_services_avset_wap",
             "metadata": {
-              "description": "This is the name of the availability set for your WAP servers"
+              "description": "This is the name of the availability set for the WAP servers"
             }
           },
           "serverexchfqdn": {
             "type": "string",
             "defaultValue": "azexch",
+            "maxLength": 13,
             "metadata": {
-              "description": "This is the base name of your two Exchange servers"
+              "description": "This is the base name of the Exchange servers"
             }
           },
           "serverexchfqdnloopcount": {
@@ -266,18 +270,25 @@
             "type": "string",
             "defaultValue": "az_services_avset_exch",
             "metadata": {
-              "description": "This is the name of the availability set for your Exchange servers"
+              "description": "This is the name of the availability set for the Exchange servers"
             }
           },
           "serveraadconnectfqdn": {
             "type": "string",
             "defaultValue": "azaadcon",
+            "maxLength": 15,
             "metadata": {
-              "description": "This is the base name for your AAD Connect server"
+              "description": "This is the base name for the AAD Connect server"
+            }
+          },
+          "serveraadsqlfqdn": {
+            "type": "string",
+            "defaultValue": "azaadsql",
+            "maxLength": 15,
+            "metadata": {
+              "description": "This is the base name for the AAD Connect SQL server"
             }
           }
-
-
     },
     "variables": {
         "ApiVer": "2017-03-30",
@@ -310,6 +321,7 @@
         "serverwapvmsize": "Standard_A3",
         "serverexchangevmsize": "Standard_A5",
         "serveraadconnectvmsize": "Standard_D3_v2",
+        "serveraadsqlvmsize": "Standard_DS3_v2",
         "serverImagePublisher": "MicrosoftWindowsServer",
         "serverImageOffer": "WindowsServer",
         "serverwindowsosversion": "2016-Datacenter",
@@ -417,6 +429,9 @@
                   "adminUserName": {"value": "[parameters('adminUserName')]"},
                   "adminPassword": {"value": "[parameters('adminPassword')]"},
                   "vnetID": {"value": "[variables('vnetID')]"},
+                  "networkappsubnetname": {"value": "[parameters('networkappsubnetname')]"},
+                  "serveraadconnectfqdn": {"value": "[parameters('serveraadconnectfqdn')]"},
+                  "serveraadconnectvmsize": {"value": "[variables('serveraadconnectvmsize')]"}
                 }
             }
         },
@@ -435,6 +450,9 @@
                   "adminUserName": {"value": "[parameters('adminUserName')]"},
                   "adminPassword": {"value": "[parameters('adminPassword')]"},
                   "vnetID": {"value": "[variables('vnetID')]"},
+                  "networkdatasubnetname": {"value": "[parameters('networkdatasubnetname')]"},
+                  "serveraadsqlfqdn": {"value": "[parameters('serveraadsqlfqdn')]"},
+                  "serveraadsqlvmsize": {"value": "[variables('serveraadsqlvmsize')]"}
                 }
             }
         }

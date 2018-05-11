@@ -25,6 +25,7 @@
           "serverdcfqdn": {
             "type": "string",
             "defaultValue": "azadds",
+            "maxLength": 13,
             "metadata": {
               "description": "This is the base name of your two domain controllers"
             }

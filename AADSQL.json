@@ -1,0 +1,148 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUserName": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+              "description": "Username for local administrator account"
+            }
+          },
+          "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "Password for local administrator account"
+            }
+          },
+          "networkappsubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_app",
+            "metadata": {
+              "description": "This is the name of your application subnet"
+            }
+          },
+          "serveraadsqlfqdn": {
+            "type": "string",
+            "defaultValue": "aadsql",
+            "maxLength": 15,
+            "metadata": {
+              "description": "This is the base name of your AAD sql Server"
+            }
+          },
+          "vnetID": {
+              "type": "string",
+              "metadata": {
+                "description": "ResourceID of the VNet to Deploy to"
+              }
+          },
+          "serveraadsqlvmsize": {
+            "type": "string",
+            "defaultValue": "Standard_DS3_v2",
+            "metadata": {
+              "description": "Size for the AAD sql VM"
+            } 
+          }  
+    },
+    "variables": {
+        "ApiVer": "2017-03-30",
+        "serverImagePublisher": "MicrosoftWindowsServer",
+        "serverImageOffer": "WindowsServer",
+        "serverwindowsosversion": "2016-Datacenter"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('serveraadsqlfqdn'),'-nic')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2016-03-30",
+            "dependsOn": [
+            ],
+            "tags": {
+              "displayName": "NICS - AADSQL",
+              "Workloads": "Identity"
+            },
+            "properties": {
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[concat(parameters('vnetID'),'/subnets/',parameters('networkappsubnetname'))]"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('serveraadsqlfqdn')]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[variables('ApiVer')]",
+            "dependsOn": [
+              "[concat('Microsoft.Network/networkInterfaces/', parameters('serveraadsqlfqdn'),'-nic')]"
+            ],
+            "tags": {
+              "displayName": "Servers - AADSQL",
+              "Workloads": "Identity"
+            },
+            "properties": {
+              "hardwareProfile": {
+                "vmSize": "[parameters('serveraadsqlvmsize')]"
+              },
+              "osProfile": {
+                "computerName": "[concat(parameters('serveraadsqlfqdn'))]",
+                "adminUsername": "[parameters('adminUserName')]",
+                "adminPassword": "[parameters('adminPassword')]"
+              },
+              "storageProfile": {
+                "imageReference": {
+                  "publisher": "[variables('serverImagePublisher')]",
+                  "offer": "[variables('serverImageOffer')]",
+                  "sku": "[variables('ServerWindowsOSVersion')]",
+                  "version": "latest"
+                },
+                "osDisk": {
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage",
+                    "name": "[concat(parameters('serveraadsqlfqdn'),'_OSDisk_1')]",
+                    "managedDisk": {
+                        "storageAccountType": "Premium_LRS"
+                    }
+                },
+                "datadisks": [
+                    {
+                        "caching": "none",
+                        "disksizeGB": "1023",
+                        "lun": 0,
+                        "createoption": "empty",
+                        "name": "[concat(parameters('serveraadsqlfqdn'),'_SQLData_1')]",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    },
+                    {
+                        "caching": "none",
+                        "disksizeGB": "1023",
+                        "lun": 1,
+                        "createoption": "empty",
+                        "name": "[concat(parameters('serveraadsqlfqdn'),'_SQLLog_1')]",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                ]
+              },
+              "networkProfile": {
+                "networkInterfaces": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('serveraadsqlfqdn'),'-nic'))]"
+                  }
+                ]
+              }
+            }
+          }
+    ]
+}
