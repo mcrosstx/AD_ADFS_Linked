@@ -146,6 +146,7 @@
                     },
                     "datadisks": [
                         {
+                            "caching": "none",
                             "disksizeGB": "1023",
                             "lun": 0,
                             "createoption": "empty"
