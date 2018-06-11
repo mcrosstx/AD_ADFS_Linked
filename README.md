@@ -2,9 +2,9 @@
 
 [COM:![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https://github.com/mcrosstx/AD_ADFS_Linked/master/azuredeploy.json)
 
-[GOV:![Deploy to AzureGov](https://azuredeploy.net/deploybutton.png)](https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2mcrosstx%2FAD_ADFS_Linked%2Fmaster%2Fazuredeploy.json)
+[GOV:![Deploy to AzureGov](https://azuredeploy.net/deploybutton.png)](https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmcrosstx%2FAD_ADFS_Linked%2Fmaster%2Fazuredeploy.json)
 
-<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2mcrosstx%2FAD_ADFS_Linked%2Fmaster%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmcrosstx%2FAD_ADFS_Linked%2Fmaster%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
