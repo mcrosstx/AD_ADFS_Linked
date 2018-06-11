@@ -1,0 +1,367 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUserName": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+              "description": "Username for local administrator account"
+            }
+          },
+          "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "Password for local administrator account"
+            }
+          },
+          "namingPrefix": {
+            "type": "string",
+            "metadata": {
+              "description": "Prefix used to build names for Azure Resources"
+            }
+          },
+          "ADDSResourceGroupName": {
+            "type": "string",
+            "metadata": {
+              "description": "Name of the AD Resource Group"
+            }
+          }
+          ,
+          "ADFSResourceGroupName": {
+            "type": "string",
+            "metadata": {
+              "description": "Name of the ADFS Resource Group"
+            }
+          },
+          "ExchangeResourceGroupName": {
+            "type": "string",
+            "metadata": {
+              "description": "Name of the Exchange Resource Group"
+            }
+          },
+          "AADConnectResourceGroupName": {
+            "type": "string",
+            "metadata": {
+              "description": "Name of the AAD Connect Resource Group"
+            }
+          },
+          "AADSQLResourceGroupName": {
+            "type": "string",
+            "metadata": {
+              "description": "Name for the AADSQL Resource Group"
+            }
+          },
+          "vnetName": {
+            "type": "string",
+            "metadata": {
+              "description": "Name of the Virtual Network to Deploy to"
+            } 
+          },
+          "vnetRG": {
+              "type": "string",
+              "metadata": {
+                  "description": "Resource Group the Virtual Network is in"
+              }
+          },
+          "networkappsubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_apps",
+            "metadata": {
+              "description": "This is the name of your apps subnet"
+            }
+          },
+          "networkdatasubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_data",
+            "metadata": {
+              "description": "This is the name of your data tier subnet"
+            }
+          },
+          "networkaddssubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_ad",
+            "metadata": {
+              "description": "This is the name of your AD subnet"
+            }
+          },
+          "networkadfssubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_adfs",
+            "metadata": {
+              "description": "This is the name of your ADFS subnet"
+            }
+          },
+          "networkadfsdmzsubnetname": {
+            "type": "string",
+            "defaultValue": "az_services_subnet_adfsdmz",
+            "metadata": {
+              "description": "This is the name of your ADFS DMZ subnet"
+            }
+          },
+          "networkwappip": {
+            "type": "string",
+            "defaultValue": "az_services_pip_adfsdmz",
+            "metadata": {
+              "description": "This is the name of the public IP used for the WAP servers"
+            }
+          },
+          "networklbadfsname": {
+            "type": "string",
+            "defaultValue": "az_services_lb_adfs",
+            "metadata": {
+              "description": "This is the name of the load balancer for the ADFS servers"
+            }
+          },
+          "networklbwapname": {
+            "type": "string",
+            "defaultValue": "az_services_lb_wap",
+            "metadata": {
+              "description": "This is the name of the load balancer for the WAP servers"
+            }
+          },
+          "serverdcfqdn": {
+            "type": "string",
+            "defaultValue": "azadds",
+            "maxLength": 13,
+            "metadata": {
+              "description": "This is the base name of the domain controllers"
+            }
+          },
+          "serverdcavset": {
+            "type": "string",
+            "defaultValue": "az_services_avset_ad",
+            "metadata": {
+              "description": "This is the name of the availability set for the DCs"
+            }
+          },
+          "serverdcfqdnloopcount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+              "description": "This is the number of DCs that will be created via loop"
+            }
+          },
+          "serveradfsfqdn": {
+            "type": "string",
+            "defaultValue": "azadfs",
+            "maxLength": 13,
+            "metadata": {
+              "description": "This is the base name of the ADFS servers"
+            }
+          },
+          "serveradfsfqdnloopcount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+              "description": "This is the number of ADFS servers that will be created via loop"
+            }
+          },
+          "serveradfsavset": {
+            "type": "string",
+            "defaultValue": "az_services_avset_adfs",
+            "metadata": {
+              "description": "This is the name of the availability set for the ADFS servers"
+            }
+          },
+          "serverwapfqdn": {
+            "type": "string",
+            "defaultValue": "azwap",
+            "maxLength": 13,
+            "metadata": {
+              "description": "This is the base name of the WAP servers"
+            }
+          },
+          "serverwapfqdnloopcount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+              "description": "This is the number of WAP servers that will be created via loop"
+            }
+          },
+          "serverwapavset": {
+            "type": "string",
+            "defaultValue": "az_services_avset_wap",
+            "metadata": {
+              "description": "This is the name of the availability set for the WAP servers"
+            }
+          },
+          "serverexchfqdn": {
+            "type": "string",
+            "defaultValue": "azexch",
+            "maxLength": 13,
+            "metadata": {
+              "description": "This is the base name of the Exchange servers"
+            }
+          },
+          "serverexchfqdnloopcount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+              "description": "This is the number of Exchange servers that will be created via loop"
+            }
+          },
+          "serverexchavset": {
+            "type": "string",
+            "defaultValue": "az_services_avset_exch",
+            "metadata": {
+              "description": "This is the name of the availability set for the Exchange servers"
+            }
+          },
+          "serveraadconnectfqdn": {
+            "type": "string",
+            "defaultValue": "azaadcon",
+            "maxLength": 15,
+            "metadata": {
+              "description": "This is the base name for the AAD Connect server"
+            }
+          },
+          "serveraadsqlfqdn": {
+            "type": "string",
+            "defaultValue": "azaadsql",
+            "maxLength": 15,
+            "metadata": {
+              "description": "This is the base name for the AAD Connect SQL server"
+            }
+          }
+    },
+    "variables": {
+        "ApiVer": "2017-03-30",
+        "ApiVerRG": "2017-05-10",
+        "ADDSResourceGroupName": "[tolower(concat(parameters('namingPrefix'), '_rg_adds'))]",
+        "ADFSResourceGroupName": "[tolower(concat(parameters('namingPrefix'), '_rg_adfs'))]",
+        "ExchangeResourceGroupName": "[tolower(concat(parameters('namingPrefix'), '_rg_exchange'))]",
+        "AADConnectResourceGroupName": "[tolower(concat(parameters('namingPrefix'), '_rg_aadconnect'))]",
+        "AADSQLResourceGroupName": "[tolower(concat(parameters('namingPrefix'), '_rg_aadsql'))]",
+        "vnetID": "[resourceId(parameters('vnetRG'),'Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+        "storagetype": "Standard_LRS",
+        "storageName": "[concat('identity', uniqueString(resourceGroup().id))]",
+        "serverdcvmsize": "Standard_A3",
+        "serveradfsvmsize": "Standard_A2",
+        "serverwapvmsize": "Standard_A3",
+        "serverexchvmsize": "Standard_A5",
+        "serveraadconnectvmsize": "Standard_D3_v2",
+        "serveraadsqlvmsize": "Standard_DS3_v2"
+    },
+    "resources": [
+        {
+            "apiVersion": "[variables('ApiVerRG')]",
+            "name": "[variables('ADDSResourceGroupName')]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('ADDSResourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/mcrosstx/AD_ADFS_Linked/master/ADDS.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "adminUserName": {"value": "[parameters('adminUserName')]"},
+                    "adminPassword": {"value": "[parameters('adminPassword')]"},
+                    "vnetID": {"value": "[variables('vnetID')]"},
+                    "networkaddssubnetname": {"value": "[parameters('networkaddssubnetname')]"},
+                    "serverdcfqdn": {"value": "[parameters('serverdcfqdn')]"},
+                    "serverdcavset": {"value": "[parameters('serverdcavset')]"},
+                    "serverdcfqdnloopcount": {"value": "[parameters('serverdcfqdnloopcount')]"},
+                    "serverdcvmsize": {"value": "[variables('serverdcvmsize')]"}
+                }
+            }
+        },
+        {
+            "apiVersion": "[variables('ApiVerRG')]",
+            "name": "[variables('ADFSResourceGroupName')]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('ADFSResourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/mcrosstx/AD_ADFS_Linked/master/ADFS.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                  "adminUserName": {"value": "[parameters('adminUserName')]"},
+                  "adminPassword": {"value": "[parameters('adminPassword')]"},
+                  "vnetID": {"value": "[variables('vnetID')]"},
+                  "networkadfssubnetname": {"value": "[parameters('networkadfssubnetname')]"},
+                  "networkadfsdmzsubnetname": {"value": "[parameters('networkadfsdmzsubnetname')]"},
+                  "networkwappip": {"value": "[parameters('networkwappip')]"},
+                  "networklbadfsname": {"value": "[parameters('networklbadfsname')]"},
+                  "networklbwapname": {"value": "[parameters('networklbwapname')]"},
+                  "serveradfsfqdn": {"value": "[parameters('serveradfsfqdn')]"},
+                  "serveradfsavset": {"value": "[parameters('serveradfsavset')]"},
+                  "serveradfsfqdnloopcount": {"value": "[parameters('serveradfsfqdnloopcount')]"},
+                  "serveradfsvmsize": {"value": "[variables('serveradfsvmsize')]"},
+                  "serverwapfqdn": {"value": "[parameters('serverwapfqdn')]"},
+                  "serverwapfqdnloopcount": {"value": "[parameters('serverwapfqdnloopcount')]"},
+                  "serverwapavset": {"value": "[parameters('serverwapavset')]"},
+                  "serverwapvmsize": {"value": "[variables('serverwapvmsize')]"}
+                }
+            }
+        },
+        {
+            "apiVersion": "[variables('ApiVerRG')]",
+            "name": "[variables('ExchangeResourceGroupName')]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('ExchangeResourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/mcrosstx/AD_ADFS_Linked/master/Exchange.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                  "adminUserName": {"value": "[parameters('adminUserName')]"},
+                  "adminPassword": {"value": "[parameters('adminPassword')]"},
+                  "vnetID": {"value": "[variables('vnetID')]"},
+                  "networkappsubnetname": {"value": "[parameters('networkappsubnetname')]"},
+                  "serverexchfqdn": {"value": "[parameters('serverexchfqdn')]"},
+                  "serverexchfqdnloopcount": {"value": "[parameters('serverexchfqdnloopcount')]"},
+                  "serverexchavset": {"value": "[parameters('serverexchavset')]"},
+                  "serverexchvmsize": {"value": "[variables('serverexchvmsize')]"}
+                }
+            }
+        },
+        {
+            "apiVersion": "[variables('ApiVerRG')]",
+            "name": "[variables('AADConnectResourceGroupName')]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('AADConnectResourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/mcrosstx/AD_ADFS_Linked/master/AAD.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                  "adminUserName": {"value": "[parameters('adminUserName')]"},
+                  "adminPassword": {"value": "[parameters('adminPassword')]"},
+                  "vnetID": {"value": "[variables('vnetID')]"},
+                  "networkappsubnetname": {"value": "[parameters('networkappsubnetname')]"},
+                  "serveraadconnectfqdn": {"value": "[parameters('serveraadconnectfqdn')]"},
+                  "serveraadconnectvmsize": {"value": "[variables('serveraadconnectvmsize')]"}
+                }
+            }
+        },
+        {
+            "apiVersion": "[variables('ApiVerRG')]",
+            "name": "[variables('AADSQLResourceGroupName')]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('AADSQLResourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/mcrosstx/AD_ADFS_Linked/master/AADSQL.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                  "adminUserName": {"value": "[parameters('adminUserName')]"},
+                  "adminPassword": {"value": "[parameters('adminPassword')]"},
+                  "vnetID": {"value": "[variables('vnetID')]"},
+                  "networkdatasubnetname": {"value": "[parameters('networkdatasubnetname')]"},
+                  "serveraadsqlfqdn": {"value": "[parameters('serveraadsqlfqdn')]"},
+                  "serveraadsqlvmsize": {"value": "[variables('serveraadsqlvmsize')]"}
+                }
+            }
+        }
+    ]
+}
