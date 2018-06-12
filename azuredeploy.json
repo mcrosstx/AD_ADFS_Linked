@@ -5,6 +5,7 @@
         "adminUserName": {
             "type": "string",
             "minLength": 1,
+            "defaultValue": "serveradmin",
             "metadata": {
               "description": "Username for local administrator account"
             }
@@ -23,6 +24,7 @@
           },
           "ADDSResourceGroupName": {
             "type": "string",
+            "defaultValue": "rg_adds",
             "metadata": {
               "description": "Name of the AD Resource Group"
             }
@@ -30,24 +32,28 @@
           ,
           "ADFSResourceGroupName": {
             "type": "string",
+            "defaultValue": "rg_adfs",
             "metadata": {
               "description": "Name of the ADFS Resource Group"
             }
           },
           "ExchangeResourceGroupName": {
             "type": "string",
+            "defaultValue": "rg_exch",
             "metadata": {
               "description": "Name of the Exchange Resource Group"
             }
           },
           "AADConnectResourceGroupName": {
             "type": "string",
+            "defaultValue": "rg_aad",
             "metadata": {
               "description": "Name of the AAD Connect Resource Group"
             }
           },
           "AADSQLResourceGroupName": {
             "type": "string",
+            "defaultValue": "rg_sql",
             "metadata": {
               "description": "Name for the AADSQL Resource Group"
             }
@@ -186,6 +192,17 @@
               "description": "This is the name of the availability set for the WAP servers"
             }
           },
+          "deployexchange": {
+            "type": "string",
+            "defaultValue": "Yes",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+              "description": "Enables deployment of Exchange servers"
+            }
+          },
           "serverexchfqdn": {
             "type": "string",
             "defaultValue": "azexch",
@@ -214,6 +231,17 @@
             "maxLength": 15,
             "metadata": {
               "description": "This is the base name for the AAD Connect server"
+            }
+          },
+          "deployaadsql": {
+            "type": "string",
+            "defaultValue": "Yes",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+              "description": "Enables deployment of AAD SQL server"
             }
           },
           "serveraadsqlfqdn": {
@@ -299,6 +327,7 @@
             }
         },
         {
+            "condition": "[equals(parameters('deployexchange'),'Yes')]",
             "apiVersion": "[variables('ApiVerRG')]",
             "name": "[variables('ExchangeResourceGroupName')]",
             "type": "Microsoft.Resources/deployments",
@@ -343,6 +372,7 @@
             }
         },
         {
+            "condition": "[equals(parameters('deployaadsql'),'Yes')]",
             "apiVersion": "[variables('ApiVerRG')]",
             "name": "[variables('AADSQLResourceGroupName')]",
             "type": "Microsoft.Resources/deployments",
