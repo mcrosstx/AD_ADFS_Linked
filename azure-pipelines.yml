@@ -1,0 +1,93 @@
+# Starter pipeline
+
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main/Networks/Edge/NVA/*
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  directory: '$(System.DefaultWorkingDirectory)\Networks\Edge\NVA'
+  serviceConnectionName: 'MCROSS3_MAC.WEST.DEVOPS'
+  subscription: 'MAC.WEST.DEVOPS'
+  subscriptionId: '8ee2aaf4-8329-4aa2-afa2-21cda345f7d4'
+  resourceGroup: 'RG-Michael.Cross3'
+  location: 'West US 2'
+  template: 'nva-edge.template.json'
+  parameters: 'nva-edge.parameters.json'
+
+stages:
+- stage: Validation
+  jobs:
+    - job: ValidationARM
+      steps:
+      - task: AzureResourceManagerTemplateDeployment@3
+        displayName: 'template validation'
+        inputs:
+          deploymentScope: 'Resource Group'
+          azureResourceManagerConnection: '$(serviceConnectionName)'
+          subscriptionId: '$(subscriptionId)'
+          action: 'Create Or Update Resource Group'
+          resourceGroupName: '$(resourceGroup)'
+          location: '$(location)'
+          templateLocation: 'Linked artifact'
+          csmFile: '$(directory)\$(template)'
+          csmParametersFile: '$(directory)\$(parameters)'
+          deploymentMode: 'Validation'
+
+      - task: Sam-Cogan.ARMTTKExtension.RunARMTTKTests.RunARMTTKTests@1
+        displayName: 'TTK Validation'
+        inputs:
+          templatelocation: '$(directory)\$(template)'
+          resultLocation: '$(directory)\Results'
+          allTemplatesMain: true
+          cliOutputResults: true
+          ignoreExitCode: true
+
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results *-armttk.xml'
+        inputs:
+          testResultsFormat: NUnit
+          testResultsFiles: '*-armttk.xml'
+          searchFolder: '$(directory)\Results'
+          failTaskOnFailedTests: true
+          testRunTitle: 'ARM TTK'
+
+      - task: PublishBuildArtifacts@1
+        displayName: PublishArtifacts
+        inputs:
+          PathtoPublish: '$(directory)'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
+
+- stage: Approval_Stage
+  displayName: 'Deploy Edge Hub Network'
+  dependsOn: [Validation]
+  jobs:
+    - deployment: edge_hub_network_deployment
+      displayName: 'edge hub network deployment environment'
+      environment: 'Production'
+      strategy: 
+         runOnce:
+           deploy:
+             steps:
+               - download: current
+                 artifact: drop
+
+               - task: AzureResourceManagerTemplateDeployment@3
+                 displayName: Arm deployment
+                 inputs:
+                  deploymentScope: 'Resource Group'
+                  azureResourceManagerConnection: '$(serviceConnectionName)'
+                  subscriptionId: '$(subscriptionId)'
+                  action: 'Create Or Update Resource Group'
+                  resourceGroupName: '$(resourceGroup)'
+                  location: '$(location)'
+                  templateLocation: 'Linked artifact'
+                  csmFile: '$(Pipeline.Workspace)\drop\$(template)'
+                  csmParametersFile: '$(Pipeline.Workspace)\drop\$(parameters)'
+                  deploymentMode: 'Incremental'
